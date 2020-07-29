@@ -1,0 +1,48 @@
+from requests.auth import HTTPBasicAuth
+requests.get('http://stardog:5820/ors/size', auth=HTTPBasicAuth(STARDOG_USER, STARDOG_PASSWORD))
+
+headers = {
+  'Accept': 'application/sparql-results+json'
+}
+
+query = "SELECT DISTINCT ?s WHERE { ?s ?p 'schema:Dataset'} LIMIT 10"
+
+r = requests.get('http://stardog:5820/ors/query?query=' + query, auth=HTTPBasicAuth(STARDOG_USER, STARDOG_PASSWORD),headers = headers)
+r.content.decode()
+
+headers = {
+  'Accept': 'application/sparql-results+json'
+}
+
+query = "SELECT DISTINCT ?s ?score WHERE { ?s ?p ?l. (?l ?score) <tag:stardog:api:property:textMatch> 'mac'.}"
+
+r = requests.get('http://stardog:5820/ors/query?query=' + query, auth=HTTPBasicAuth(STARDOG_USER, STARDOG_PASSWORD),headers = headers)
+r.content.decode()
+
+
+
+export PATH="/opt/stardog/bin:$PATH"
+
+stardog query -b s="<http://schema.org/name >"  -- ors "select * {?s ?p ?o}"
+
+stardog query ors "select ?s where { ?s <evi:usedSoftware> ?r }"
+
+stardog query ors "prefix fts: <tag:stardog:api:search:> select * where {  service fts:textMatch { [] fts:query 'soft1'; fts:score ?score ; fts:result ?software ; }?softid <http://schema.org/name> ?software .}"
+
+stardog query ors "prefix fts: <tag:stardog:api:search:> select * where {  service fts:textMatch { [] fts:query 'soft1'; fts:score ?score ; fts:result ?software ; } ?softid <http://schema.org/name> ?software . ?computation <evi:usedSoftware> ?soft_id .}"
+
+stardog query ors "prefix fts: <tag:stardog:api:search:> select ?data ?score where {  service fts:textMatch { [] fts:query 'soft1'; fts:score ?score ; fts:result ?software ; } ?softid <http://schema.org/name> ?software . ?computation <evi:usedSoftware> ?soft_id . ?data <evi:generatedBy> ?computation}"
+
+SELECT * WHERE {
+  service <tag:stardog:api:search:>:textMatch {
+      [] fts:query 'soft1';
+         fts:score ?score ;
+         fts:result ?software ;
+  }
+  ?soft_id <http://schema.org/name> ?software .
+  FILTER (?soft_id  30.5)
+  ?computation <evi:usedSoftware> ?soft_id .
+  filter(?newBook != ?relatedBook)
+}
+
+stardog query ors "SELECT DISTINCT * WHERE { ?s ?p ?l. (?l ?score) <tag:stardog:api:property:textMatch> 'SPo2 AND HR' .}"
